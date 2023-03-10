@@ -10,8 +10,8 @@ const thoughtSchema = new Schema (
         thoughtText: {
             type: String,
             required: true,
-            minlength: 1,
-            maxlength: 280,
+            minlength: 2,
+            maxlength: 279,
       },
       // REQUIREMENTS: Date, Set default value to the current timestamp and use a getter method to format the timestamp on query
         createdAt: {
@@ -24,7 +24,7 @@ const thoughtSchema = new Schema (
             type: String,
             required: true,
       },
-      // REQUIREMENTS: (These are like replies) - Array of nested document created with the reqctionSchema
+      // REQUIREMENTS: (These are like replies) - Array of nested document created with the reactionSchema
       reactions: [reactionSchema],
     },
     {
