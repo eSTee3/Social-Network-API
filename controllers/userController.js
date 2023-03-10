@@ -57,10 +57,12 @@ module.exports = {
               .json({ message: `I'm unable to find a User with that ID` })
           : Thought.deleteMany({ _id: { $in: user.thoughts } })
       )
-      .then(() => res.json({ message: `User and associated thought has been DELETED` }))
+      .then(() =>
+        res.json({ message: `User and associated thought has been DELETED` })
+      )
       .catch((err) => res.status(500).json(err));
   },
-  //PUT a new Friend
+  // Update a User by adding (PUT) a new Friend
   addFriend(req, res) {
     User.findOneAndUpdate(
       { _id: req.params.userId },
@@ -76,7 +78,7 @@ module.exports = {
       )
       .catch((err) => res.status(500).json(err));
   },
-  //DELETE an existing Friend
+  //DELETE an existing Friend from a User
   deleteFriend(req, res) {
     User.findOneAndUpdate(
       { _id: req.params.userId },
