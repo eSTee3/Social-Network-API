@@ -1,29 +1,111 @@
-const router = require("express").Router();
+const { User, Thought } = require("../models");
 
-const {
-  getAllThoughts,
-  getOneThought,
-  createThought,
-  updateThought,
-  deleteOneThought,
-  createReaction,
-  deleteOneReaction,
-} = require("../../controllers/thoughtController");
-
-// Retreive (GET) all thoughts and POST | /api/thoughts
-router.route("/").get(getAllThoughts).post(createThought);
-
-// Retrieve (GET), Update (PUT) and DELETE a single thought | /api/thoughts/:thoughtId GET one thought, PUT and DELETE by iD
-router
-  .route("/:thoughtId")
-  .get(getOneThought)
-  .put(updateThought)
-  .delete(deleteOneThought);
-
-//  Create (POST) new Reactions | /api/thoughts/:thoughtId/reactions
-router.route("/:thoughtId/reactions").post(createReaction);
-
-// DELETE a single Reaction by ID | /api/thoughts/:thoughtId/reactions/:reactionId
-router.route("/:thoughtId/reactions/:reactionId").delete(deleteOneReaction);
-
-module.exports = router;
+module.exports = {
+  // Retreive (GET) all thoughts
+  getAllThoughts(req, res) {
+    Thought.find({})
+      .then((thought) => res.json(thought))
+      .catch((err) => res.status(500).json(err));
+  },
+  // Retreive (GET) a single thought
+  getOneThought(req, res) {
+    Thought.findOne({ _id: req.params.thoughtId })
+      .select("-__v")
+      .then((thought) =>
+        !thought
+          ? res
+              .status(404)
+              .json({ message: `I'm unable to find a Thought with that ID` })
+          : res.json(thought)
+      )
+      .catch((err) => res.status(500).json(err));
+  },
+  // Create (POST) a Thought tying it's id to the associated User's array
+  createThought(req, res) {
+    Thought.create(req.body)
+      .then(({ _id }) => {
+        return User.findOneAndUpdate(
+          { _id: req.body.userId },
+          { $push: { thoughts: _id } },
+          { new: true }
+        );
+      })
+      .then((thought) =>
+        !thought
+          ? res
+              .status(404)
+              .json({ message: `I'm unable to find a Thought with that ID` })
+          : res.json(thought)
+      )
+      .catch((err) => res.status(500).json(err));
+  },
+  // Update (PUT) an existing Thought
+  updateThought(req, res) {
+    Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId },
+      { $set: req.body },
+      { runValidators: true, New: true }
+    )
+      .then((user) =>
+        !user
+          ? res.status(404).json({ message: "No thought find with this ID!" })
+          : res.json(user)
+      )
+      .catch((err) => res.status(500).json(err));
+  },
+  // DELETE a single Thought
+  deleteOneThought(req, res) {
+    Thought.findOneAndDelete({ _id: req.params.thoughtId })
+      .then((thought) =>
+        !thought
+          ? res
+              .status(404)
+              .json({ message: `I'm unable to find a Thought with that ID` })
+          : User.findOneAndUpdate(
+              { thoughts: req.params.thoughtId },
+              { $pull: { thoughts: req.params.thoughtId } },
+              { new: true }
+            )
+      )
+      .then((user) =>
+        !user
+          ? res
+              .status(404)
+              .json({ message: `Thought (without User) has been DELETED` })
+          : res.json({ message: `Thought has been DELETED` })
+      )
+      .catch((err) => res.status(500).json(err));
+  },
+  // Create (POST) a new Reaction
+  createReaction(req, res) {
+    Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId },
+      { $addToSet: { reactions: req.body } },
+      { runValidators: true, new: true }
+    )
+      .then((thought) =>
+        !thought
+          ? res
+              .status(404)
+              .json({ message: `I'm unable to find a Thought with that ID` })
+          : res.json(thought)
+      )
+      .catch((err) => res.status(500).json(err));
+  },
+  // DELETE an existing reaction
+  deleteOneReaction(req, res) {
+    Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId },
+      { $pull: { reactions: { reactionId: req.params.reactionId } } },
+      { runValidators: true, new: true }
+    )
+      .then((thought) =>
+        !thought
+          ? res
+              .status(404)
+              .json({ message: `I'm unable to find a Thought with that ID` })
+          : res.json(thought)
+      )
+      .catch((err) => res.status(500).json(err));
+  },
+};
