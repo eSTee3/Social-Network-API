@@ -14,6 +14,6 @@ app.use(routes);
 // Notifies the user that the server is ready, along with the port used
 db.once("open", () => {
   app.listen(PORT, () => {
-    console.log(`API server running on port ${PORT}!`);
+    console.log(`API server running, via: http://localhost:${PORT}`);
   });
 });
