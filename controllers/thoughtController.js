@@ -32,9 +32,7 @@ module.exports = {
       })
       .then((thought) =>
         !thought
-          ? res
-              .status(404)
-              .json({ message: `I'm unable to find a Thought with that ID` })
+          ? res.status(404).json({ message: `New Thought has been added` })
           : res.json(thought)
       )
       .catch((err) => res.status(500).json(err));
