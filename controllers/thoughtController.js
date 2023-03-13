@@ -46,7 +46,7 @@ module.exports = {
     )
       .then((user) =>
         !user
-          ? res.status(404).json({ message: "No thought find with this ID!" })
+          ? res.status(404).json({ message: `I'm unable to find a Thought with that ID` })
           : res.json(user)
       )
       .catch((err) => res.status(500).json(err));
